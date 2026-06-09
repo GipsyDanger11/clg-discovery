@@ -1,65 +1,110 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect, useRef } from "react";
+import { CollegeCard } from "@/components/CollegeCard";
+import { SearchFilterBar } from "@/components/SearchFilterBar";
+import { Pagination } from "@/components/Pagination";
+import type { College, PaginationInfo } from "@/lib/types";
+
+export default function HomePage() {
+  const [colleges, setColleges] = useState<College[]>([]);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    page: 1,
+    limit: 12,
+    total: 0,
+    totalPages: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
+  const [location, setLocation] = useState("");
+  const [minRating, setMinRating] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+  const [page, setPage] = useState(1);
+  const filterRef = useRef({ query, location, minRating, sortBy });
+
+  useEffect(() => {
+    const prev = filterRef.current;
+    const filtersChanged =
+      prev.query !== query ||
+      prev.location !== location ||
+      prev.minRating !== minRating ||
+      prev.sortBy !== sortBy;
+
+    if (filtersChanged) {
+      filterRef.current = { query, location, minRating, sortBy };
+      setPage(1);
+      return;
+    }
+
+    async function fetchColleges() {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (query) params.set("q", query);
+      if (location) params.set("location", location);
+      if (minRating) params.set("minRating", minRating);
+      params.set("sortBy", sortBy);
+      params.set("page", String(page));
+      params.set("limit", String(12));
+
+      try {
+        const res = await fetch(`/api/colleges?${params}`);
+        const data = await res.json();
+        setColleges(data.colleges);
+        setPagination(data.pagination);
+      } catch {
+        setColleges([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchColleges();
+  }, [query, location, minRating, sortBy, page]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <div className="mx-auto max-w-7xl px-4 py-8">
+      <div className="mb-8 text-center">
+        <h1 className="text-4xl font-bold text-purple-100">
+          Discover Your Future College
+        </h1>
+        <p className="mt-2 text-purple-300">
+          Search, compare, and explore colleges with AI assistance
+        </p>
+      </div>
+
+      <SearchFilterBar
+        query={query}
+        onQueryChange={setQuery}
+        location={location}
+        onLocationChange={setLocation}
+        minRating={minRating}
+        onMinRatingChange={setMinRating}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
+      />
+
+      {loading ? (
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-32 rounded-xl border border-purple-500/20 bg-purple-950/30 animate-pulse"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          ))}
         </div>
-      </main>
+      ) : colleges.length === 0 ? (
+        <div className="mt-16 text-center text-purple-400">
+          No colleges found. Try adjusting your filters.
+        </div>
+      ) : (
+        <>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {colleges.map((college) => (
+              <CollegeCard key={college.id} college={college} />
+            ))}
+          </div>
+          <Pagination pagination={pagination} onPageChange={setPage} />
+        </>
+      )}
     </div>
   );
 }
