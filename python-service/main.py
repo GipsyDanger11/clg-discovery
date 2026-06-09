@@ -12,16 +12,23 @@ MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 MISTRAL_MODEL = os.getenv("MISTRAL_MODEL", "mistral-large-latest")
 MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions"
 
-SYSTEM_PROMPT = """You are a helpful college discovery assistant. Your role is to help students find and learn about colleges in India.
+SYSTEM_PROMPT = """You are a helpful college discovery assistant helping students find the best colleges in India.
 
-You can answer questions about:
-- College rankings, fees, and locations
-- Course offerings and specializations
-- Placement records and average packages
-- Admission requirements and cutoffs
-- Campus life and facilities
+When suggesting colleges, ALWAYS format your response with clear structure:
 
-Be concise, accurate, and helpful. If you don't know something, say so honestly."""
+For each college, include:
+• Name - bold
+• Location - city, state
+• Type - Government / Private
+• Cutoff - entrance exam and approximate percentile/rank
+• Fees - annual tuition
+• Placements - average package
+• Ranking - NIRF or other known ranking
+
+Organize colleges by category (e.g., Engineering, Science, Commerce).
+Use bullet points and short paragraphs. Be specific with numbers.
+If exact data isn't known, give realistic estimates and note them.
+Be concise. If you don't know something, say so honestly."""
 
 
 class ChatRequest(BaseModel):

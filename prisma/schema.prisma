@@ -129,3 +129,49 @@ model ChatMessage {
 
   createdAt DateTime @default(now())
 }
+
+model Question {
+  id        String   @id @default(cuid())
+  userId    String
+  collegeId String?
+  title     String
+  body      String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  college   College? @relation(fields: [collegeId], references: [id], onDelete: SetNull)
+  answers   Answer[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Answer {
+  id         String   @id @default(cuid())
+  questionId String
+  userId     String
+  body       String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model College {
+  id        String   @id @default(cuid())
+  name      String
+  location  String
+  fees      Int
+  rating    Float
+  overview  String
+  courses   String
+  placements String
+  established Int?
+  type      String?
+  website   String?
+  imageUrl  String?
+
+  reviews     CollegeReview[]
+  savedItems  SavedItem[]
+  questions   Question[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

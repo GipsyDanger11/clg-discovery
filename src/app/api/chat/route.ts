@@ -3,6 +3,74 @@ import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth-utils";
 
 const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || "http://localhost:8000";
+const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
+const MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions";
+
+const SYSTEM_PROMPT = `You are a helpful college discovery assistant helping students find the best colleges in India.
+
+When suggesting colleges, ALWAYS format your response with clear structure:
+
+For each college, include:
+• **Name** – bold
+• **Location** – city, state
+• **Type** – Government / Private
+• **Cutoff** – entrance exam and approximate percentile/rank for 87%
+• **Fees** – annual tuition
+• **Placements** – average package
+• **Ranking** – NIRF or other known ranking
+
+Organize colleges by category (e.g., Engineering, Science, Commerce).
+Use bullet points and short paragraphs. Be specific with numbers.
+If exact data isn't known, give realistic estimates and note them.
+Be concise. If you don't know something, say so honestly.`;
+
+async function callMistralDirect(message: string, history: { role: string; content: string }[]) {
+  if (!MISTRAL_API_KEY) {
+    return "AI service is not configured. Please set MISTRAL_API_KEY in the environment.";
+  }
+
+  const messages = [{ role: "system", content: SYSTEM_PROMPT }];
+  for (const msg of history.slice(-10)) {
+    messages.push({ role: msg.role, content: msg.content });
+  }
+  messages.push({ role: "user", content: message });
+
+  const res = await fetch(MISTRAL_API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${MISTRAL_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "mistral-large-latest",
+      messages,
+      temperature: 0.7,
+      max_tokens: 1024,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error("Mistral API error:", err);
+    throw new Error(`Mistral API error: ${res.status}`);
+  }
+
+  const data = await res.json();
+  return data.choices[0].message.content as string;
+}
+
+async function callPythonService(message: string, history: { role: string; content: string }[]) {
+  const res = await fetch(`${PYTHON_SERVICE_URL}/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, conversation_history: history }),
+    signal: AbortSignal.timeout(15000),
+  });
+
+  if (!res.ok) throw new Error("Python service error");
+  const data = await res.json();
+  return data.response || data.message || "I'm not sure how to respond.";
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,27 +106,23 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const pythonResponse = await fetch(`${PYTHON_SERVICE_URL}/chat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message,
-        conversation_history: (
-          await prisma.chatMessage.findMany({
-            where: { conversationId: conversation.id },
-            orderBy: { createdAt: "asc" },
-            take: 20,
-          })
-        ).map((m) => ({ role: m.role, content: m.content })),
-      }),
-    });
+    const conversationHistory = (
+      await prisma.chatMessage.findMany({
+        where: { conversationId: conversation.id },
+        orderBy: { createdAt: "asc" },
+        take: 20,
+      })
+    ).map((m) => ({ role: m.role, content: m.content }));
 
-    if (!pythonResponse.ok) {
-      throw new Error("AI service error");
+    let aiMessage: string;
+
+    // Try Python service first, fall back to direct Mistral call
+    try {
+      aiMessage = await callPythonService(message, conversationHistory);
+    } catch {
+      console.log("Python service unavailable, calling Mistral directly");
+      aiMessage = await callMistralDirect(message, conversationHistory);
     }
-
-    const aiData = await pythonResponse.json();
-    const aiMessage = aiData.response || aiData.message || "I'm not sure how to respond.";
 
     const savedMessage = await prisma.chatMessage.create({
       data: {
@@ -74,6 +138,7 @@ export async function POST(request: NextRequest) {
       conversationTitle: conversation.title,
     });
   } catch (error) {
+    console.error("Chat API error:", error);
     if (error instanceof Error && error.message === "Unauthorized") {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }

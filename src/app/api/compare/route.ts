@@ -28,5 +28,5 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  return Response.json(colleges);
+  return Response.json({ colleges });
 }

@@ -90,13 +90,13 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
             onClick={onClose}
           />
           <motion.div
-            className="fixed bottom-0 left-0 z-50 flex h-[80vh] w-full max-w-md flex-col rounded-tr-2xl bg-white shadow-2xl sm:left-6 sm:bottom-6 sm:h-[70vh] sm:rounded-2xl"
-            initial={{ x: -400, opacity: 0 }}
+            className="fixed bottom-0 right-0 z-50 flex h-[80vh] w-full max-w-md flex-col rounded-tl-2xl bg-white shadow-2xl sm:right-6 sm:bottom-6 sm:h-[70vh] sm:rounded-2xl"
+            initial={{ x: 400, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -400, opacity: 0 }}
+            exit={{ x: 400, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
           >
-            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3.5 bg-gradient-to-r from-primary-50/50 to-white">
+            <div className="flex items-center justify-center border-b border-gray-100 px-5 py-3.5 bg-gradient-to-r from-primary-50/50 to-white relative">
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-purple-600 shadow-sm">
                   <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -108,7 +108,7 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
                   <p className="text-xs text-gray-400">College discovery help</p>
                 </div>
               </div>
-              <button onClick={onClose} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+              <button onClick={onClose} className="absolute right-3 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                 </svg>

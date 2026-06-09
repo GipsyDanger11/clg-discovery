@@ -48,12 +48,12 @@ export function ChatInterface({ conversationId }: ChatInterfaceProps) {
       setCurrentConvId(data.conversationId);
       setMessages((prev) => [
         ...prev.slice(0, -1),
-        { id: "u", conversationId: data.conversationId, role: "user", content: userMessage, createdAt: new Date().toISOString() },
+        { id: "user-" + Date.now(), conversationId: data.conversationId, role: "user", content: userMessage, createdAt: new Date().toISOString() },
         { id: data.message.id, conversationId: data.conversationId, role: "assistant", content: data.message.content, createdAt: data.message.createdAt },
       ]);
       fetchConversations();
     } catch {
-      setMessages((prev) => [...prev, { id: "err", conversationId: currentConvId || "", role: "assistant", content: "Sorry, something went wrong.", createdAt: new Date().toISOString() }]);
+      setMessages((prev) => [...prev, { id: "err-" + Date.now(), conversationId: currentConvId || "", role: "assistant", content: "Sorry, something went wrong.", createdAt: new Date().toISOString() }]);
     } finally { setLoading(false); }
   }
 

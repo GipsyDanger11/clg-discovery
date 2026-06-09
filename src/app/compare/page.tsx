@@ -1,17 +1,40 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useRef, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ComparisonTable } from "@/components/ComparisonTable";
 import { FadeIn } from "@/components/Motion";
 import type { College } from "@/lib/types";
 
-export default function ComparePage() {
+function CompareInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [colleges, setColleges] = useState<College[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<College[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const ids = searchParams.get("ids");
+    if (!ids || loaded) return;
+    (async () => {
+      try {
+        const res = await fetch(`/api/compare?ids=${ids}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.colleges?.length >= 2) {
+            setColleges(data.colleges);
+          }
+        }
+      } catch { /* ignore */ }
+      setLoaded(true);
+    })();
+  }, [searchParams, loaded]);
 
   useEffect(() => {
     if (!searchQuery.trim()) {
+      setSearchResults([]);
       return;
     }
     const timer = setTimeout(async () => {
@@ -26,16 +49,38 @@ export default function ComparePage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  async function addCollege(ccollege: College) {
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setSearchResults([]);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const syncUrl = useCallback((cols: College[]) => {
+    if (cols.length >= 2) {
+      router.replace(`/compare?ids=${cols.map((c) => c.id).join(",")}`, { scroll: false });
+    } else {
+      router.replace("/compare", { scroll: false });
+    }
+  }, [router]);
+
+  function addCollege(c: College) {
     if (colleges.length >= 3) return;
-    if (colleges.find((c) => c.id === ccollege.id)) return;
-    setColleges((prev) => [...prev, ccollege]);
+    if (colleges.find((x) => x.id === c.id)) return;
+    const next = [...colleges, c];
+    setColleges(next);
+    syncUrl(next);
     setSearchQuery("");
     setSearchResults([]);
   }
 
   function removeCollege(id: string) {
-    setColleges((prev) => prev.filter((c) => c.id !== id));
+    const next = colleges.filter((c) => c.id !== id);
+    setColleges(next);
+    syncUrl(next);
   }
 
   return (
@@ -46,7 +91,7 @@ export default function ComparePage() {
       </FadeIn>
 
       <FadeIn delay={0.1}>
-        <div className="mb-6 relative">
+        <div className="mb-6 relative" ref={dropdownRef}>
           <input
             type="text"
             value={searchQuery}
@@ -102,5 +147,13 @@ export default function ComparePage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ComparePage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-5xl px-4 py-10"><div className="animate-pulse h-8 w-64 bg-gray-200 rounded mb-4"></div><div className="animate-pulse h-4 w-96 bg-gray-200 rounded mb-8"></div><div className="animate-pulse h-12 w-full bg-gray-200 rounded-xl mb-6"></div></div>}>
+      <CompareInner />
+    </Suspense>
   );
 }

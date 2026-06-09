@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import type { College } from "@/lib/types";
 
 interface ComparisonTableProps {
@@ -5,8 +8,6 @@ interface ComparisonTableProps {
 }
 
 export function ComparisonTable({ colleges }: ComparisonTableProps) {
-  if (colleges.length === 0) return null;
-
   return (
     <div className="overflow-x-auto rounded-2xl border border-gray-150 shadow-sm">
       <table className="w-full text-sm">
@@ -22,12 +23,12 @@ export function ComparisonTable({ colleges }: ComparisonTableProps) {
         </thead>
         <tbody className="divide-y divide-gray-100">
           <Row label="Location" values={colleges.map((c) => c.location)} />
-          <Row label="Rating" values={colleges.map((c) => String(c.rating))} />
+          <Row label="Rating" values={colleges.map((c) => `${"★".repeat(Math.round(c.rating))}${"☆".repeat(5 - Math.round(c.rating))} ${c.rating}`)} />
           <Row label="Fees (per year)" values={colleges.map((c) => `₹${c.fees.toLocaleString()}`)} />
           <Row label="Established" values={colleges.map((c) => String(c.established || "N/A"))} />
           <Row label="Type" values={colleges.map((c) => c.type || "N/A")} />
-          <Row label="Courses" values={colleges.map((c) => c.courses)} />
-          <Row label="Placements" values={colleges.map((c) => c.placements)} />
+          <ExpandableRow label="Courses" values={colleges.map((c) => c.courses)} />
+          <ExpandableRow label="Placements" values={colleges.map((c) => c.placements)} />
         </tbody>
       </table>
     </div>
@@ -39,8 +40,34 @@ function Row({ label, values }: { label: string; values: string[] }) {
     <tr className="hover:bg-gray-50/50 transition-colors">
       <td className="p-4 text-primary-600 font-medium whitespace-nowrap">{label}</td>
       {values.map((v, i) => (
+        <td key={i} className="p-4 text-gray-700">{v}</td>
+      ))}
+    </tr>
+  );
+}
+
+function ExpandableRow({ label, values }: { label: string; values: string[] }) {
+  const [expanded, setExpanded] = useState(false);
+  const isLong = values.some((v) => v.length > 120);
+
+  return (
+    <tr className="hover:bg-gray-50/50 transition-colors align-top">
+      <td className="p-4 text-primary-600 font-medium whitespace-nowrap">{label}</td>
+      {values.map((v, i) => (
         <td key={i} className="p-4 text-gray-700">
-          {v}
+          {isLong && !expanded ? (
+            <>
+              <span>{v.slice(0, 120)}...</span>
+              <button onClick={() => setExpanded(true)} className="ml-1 text-primary-500 hover:text-primary-700 text-xs font-medium">Show more</button>
+            </>
+          ) : (
+            <>
+              <span className="whitespace-pre-wrap">{v}</span>
+              {isLong && expanded && (
+                <button onClick={() => setExpanded(false)} className="ml-1 text-primary-500 hover:text-primary-700 text-xs font-medium">Show less</button>
+              )}
+            </>
+          )}
         </td>
       ))}
     </tr>
