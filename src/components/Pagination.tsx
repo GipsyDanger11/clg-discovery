@@ -13,21 +13,21 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
   if (totalPages <= 1) return null;
 
   return (
-    <div className="mt-6 flex items-center justify-center gap-2">
+    <div className="mt-8 flex items-center justify-center gap-2">
       <button
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
-        className="rounded-lg border border-purple-500/30 px-3 py-1.5 text-sm text-purple-200 hover:bg-purple-800/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-primary-50 hover:border-primary-200 hover:text-primary-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
       >
         Previous
       </button>
-      <span className="px-3 text-sm text-purple-300">
+      <span className="px-4 text-sm text-gray-500">
         Page {page} of {totalPages}
       </span>
       <button
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
-        className="rounded-lg border border-purple-500/30 px-3 py-1.5 text-sm text-purple-200 hover:bg-purple-800/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-primary-50 hover:border-primary-200 hover:text-primary-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
       >
         Next
       </button>

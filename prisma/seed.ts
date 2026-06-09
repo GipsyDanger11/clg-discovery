@@ -390,10 +390,9 @@ const colleges = [
 async function main() {
   console.log("Seeding database...");
 
-  await prisma.college.createMany({
-    data: colleges,
-    skipDuplicates: true,
-  });
+  for (const college of colleges) {
+    await prisma.college.create({ data: college });
+  }
 
   console.log(`Seeded ${colleges.length} colleges`);
 }

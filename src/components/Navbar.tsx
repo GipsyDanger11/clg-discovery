@@ -2,32 +2,30 @@
 
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
+import { Logo } from "./Logo";
 
 export function Navbar() {
   const { data: session } = useSession();
 
   return (
-    <nav className="border-b border-purple-500/20 bg-purple-950/60 backdrop-blur-sm">
+    <nav className="sticky top-0 z-50 border-b border-primary-100 bg-white/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        <Link href="/" className="text-xl font-bold text-purple-300">
-          CollegeDiscovery
+        <Link href="/">
+          <Logo />
         </Link>
         <div className="flex items-center gap-4 text-sm">
-          <Link href="/" className="text-purple-200 hover:text-purple-100 transition-colors">
+          <Link href="/" className="text-gray-600 hover:text-primary-600 transition-colors font-medium">
             Colleges
           </Link>
-          <Link href="/compare" className="text-purple-200 hover:text-purple-100 transition-colors">
+          <Link href="/compare" className="text-gray-600 hover:text-primary-600 transition-colors font-medium">
             Compare
-          </Link>
-          <Link href="/chat" className="text-purple-200 hover:text-purple-100 transition-colors">
-            AI Chat
           </Link>
           {session?.user ? (
             <div className="flex items-center gap-3">
-              <span className="text-purple-300">{session.user.name || session.user.email}</span>
+              <span className="text-gray-700 font-medium">{session.user.name || session.user.email}</span>
               <button
                 onClick={() => signOut()}
-                className="rounded-lg bg-purple-700 px-3 py-1.5 text-white hover:bg-purple-600 transition-colors"
+                className="rounded-lg bg-primary-500 px-4 py-1.5 text-sm text-white font-medium hover:bg-primary-600 transition-colors shadow-sm"
               >
                 Sign Out
               </button>
@@ -35,7 +33,7 @@ export function Navbar() {
           ) : (
             <Link
               href="/auth/signin"
-              className="rounded-lg bg-purple-600 px-3 py-1.5 text-white hover:bg-purple-500 transition-colors"
+              className="rounded-lg bg-primary-500 px-4 py-1.5 text-sm text-white font-medium hover:bg-primary-600 transition-colors shadow-sm"
             >
               Sign In
             </Link>

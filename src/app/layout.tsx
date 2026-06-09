@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { BackgroundAnimation } from "@/components/BackgroundAnimation";
 import { Navbar } from "@/components/Navbar";
+import { FloatingChatIcon } from "@/components/FloatingChatIcon";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,7 +18,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "CollegeDiscovery",
-  description: "Discover and compare colleges",
+  description: "Discover and compare colleges across India",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
@@ -30,11 +35,12 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col bg-white text-gray-800">
         <Providers>
           <BackgroundAnimation />
           <Navbar />
           <main className="flex-1">{children}</main>
+          <FloatingChatIcon />
         </Providers>
       </body>
     </html>
