@@ -8,24 +8,41 @@ export function Navbar() {
   const { data: session } = useSession();
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-primary-100 bg-white/80 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
+    <nav className="sticky top-0 z-50 border-b border-gray-200/60 bg-white/80 backdrop-blur-lg supports-[backdrop-filter]:bg-white/60">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
         <Link href="/">
           <Logo />
         </Link>
-        <div className="flex items-center gap-4 text-sm">
-          <Link href="/" className="text-gray-600 hover:text-primary-600 transition-colors font-medium">
+        <div className="flex items-center gap-1 sm:gap-2">
+          <Link
+            href="/"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-primary-50 hover:text-primary-600 sm:px-4"
+          >
             Colleges
           </Link>
-          <Link href="/compare" className="text-gray-600 hover:text-primary-600 transition-colors font-medium">
+          <Link
+            href="/compare"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-primary-50 hover:text-primary-600 sm:px-4"
+          >
             Compare
           </Link>
+          <Link
+            href="/chat"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-primary-50 hover:text-primary-600 sm:px-4"
+          >
+            AI Chat
+          </Link>
           {session?.user ? (
-            <div className="flex items-center gap-3">
-              <span className="text-gray-700 font-medium">{session.user.name || session.user.email}</span>
+            <div className="flex items-center gap-2 ml-2 sm:ml-4">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700">
+                {(session.user.name || session.user.email || "U").charAt(0).toUpperCase()}
+              </div>
+              <span className="hidden text-sm font-medium text-gray-700 sm:inline">
+                {session.user.name || session.user.email}
+              </span>
               <button
                 onClick={() => signOut()}
-                className="rounded-lg bg-primary-500 px-4 py-1.5 text-sm text-white font-medium hover:bg-primary-600 transition-colors shadow-sm"
+                className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:border-primary-200 hover:bg-primary-50 hover:text-primary-600"
               >
                 Sign Out
               </button>
@@ -33,7 +50,7 @@ export function Navbar() {
           ) : (
             <Link
               href="/auth/signin"
-              className="rounded-lg bg-primary-500 px-4 py-1.5 text-sm text-white font-medium hover:bg-primary-600 transition-colors shadow-sm"
+              className="ml-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary-700 hover:shadow-md sm:ml-4"
             >
               Sign In
             </Link>

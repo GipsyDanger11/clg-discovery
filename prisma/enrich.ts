@@ -13,6 +13,10 @@ import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { PrismaNeonHttp } from "@prisma/adapter-neon";
 
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled rejection:", err instanceof Error ? err.message : err);
+});
+
 const adapter = new PrismaNeonHttp(process.env.DATABASE_URL!, {});
 const prisma = new PrismaClient({ adapter });
 
@@ -29,12 +33,37 @@ const COLLEGE_IMAGES = [
   "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&h=400&fit=crop",
   "https://images.unsplash.com/photo-1592194996308-7b43878e84a6?w=800&h=400&fit=crop",
   "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800&h=400&fit=crop",
-  "https://images.unsplash.com/photo-1523050854058-8df90110c7f1?w=800&h=400&fit=crop",
   "https://images.unsplash.com/photo-1564981797816-1043664bf78d?w=800&h=400&fit=crop",
-  "https://images.unsplash.com/photo-1597239450996-ea7c1e2c44d9?w=800&h=400&fit=crop",
   "https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800&h=400&fit=crop",
   "https://images.unsplash.com/photo-1565123409695-7b5ef63a2efb?w=800&h=400&fit=crop",
   "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=800&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1576495199011-eb94736d05d6?w=800&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1583373834259-46cc92173cb7?w=800&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1527891751199-7225231a68dd?w=800&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1559135197-8a45ea74d367?w=800&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?w=800&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1606761568499-6d2451b23c66?w=800&h=400&fit=crop",
+  "https://images.pexels.com/photos/207691/pexels-photo-207691.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/256455/pexels-photo-256455.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/267885/pexels-photo-267885.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/301926/pexels-photo-301926.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/532743/pexels-photo-532743.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/295045/pexels-photo-295045.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/289511/pexels-photo-289511.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/169918/pexels-photo-169918.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/209956/pexels-photo-209956.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/236230/pexels-photo-236230.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/336358/pexels-photo-336358.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/208745/pexels-photo-208745.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/290590/pexels-photo-290590.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/326546/pexels-photo-326546.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/373076/pexels-photo-373076.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/256081/pexels-photo-256081.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/260346/pexels-photo-260346.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/356726/pexels-photo-356726.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/325229/pexels-photo-325229.jpeg?auto=compress&w=800&h=400",
+  "https://images.pexels.com/photos/257006/pexels-photo-257006.jpeg?auto=compress&w=800&h=400",
 ];
 
 async function callMistral(prompt: string, maxTokens = 2000): Promise<string> {
@@ -145,11 +174,23 @@ Return ONLY the JSON array.`;
       if (!Array.isArray(newColleges)) { console.log("  No valid array returned, skipping batch"); continue; }
 
       for (const c of newColleges) {
-        const college = c as { name?: string; location?: string; fees?: number; rating?: number; overview?: string; courses?: string; placements?: string; established?: number; type?: string };
+        const college = c as { name?: string; location?: string; fees?: number; rating?: number; overview?: string; courses?: string; placements?: unknown; established?: number; type?: string };
         if (!college.name) continue;
 
         const id = college.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
         const imageUrl = COLLEGE_IMAGES[(added + batch) % COLLEGE_IMAGES.length];
+
+        let placementsStr = "";
+        if (typeof college.placements === "string") {
+          placementsStr = college.placements;
+        } else if (college.placements && typeof college.placements === "object") {
+          const p = college.placements as Record<string, unknown>;
+          const parts: string[] = [];
+          if (p.highest) parts.push(`Highest Package: ₹${p.highest}`);
+          if (p.average) parts.push(`Average Package: ₹${p.average} LPA`);
+          if (Array.isArray(p.recruiters)) parts.push(`Top Recruiters: ${(p.recruiters as string[]).join(", ")}`);
+          placementsStr = parts.join(", ");
+        }
 
         try {
           await prisma.college.create({
@@ -161,7 +202,7 @@ Return ONLY the JSON array.`;
               rating: college.rating || 3.5,
               overview: college.overview || "",
               courses: college.courses || "",
-              placements: college.placements || "",
+              placements: placementsStr,
               established: college.established || null,
               type: college.type || null,
               imageUrl,
@@ -190,14 +231,11 @@ async function seedReviewUsers() {
   if (count >= 3) return prisma.user.findMany({ take: 3 });
   const users = [];
   for (const name of ["Aarav Sharma", "Priya Patel", "Rahul Singh"]) {
-    const u = await prisma.user.upsert({
-      where: { email: `${name.toLowerCase().replace(" ", ".")}@reviewer.app` },
-      update: {},
-      create: {
-        email: `${name.toLowerCase().replace(" ", ".")}@reviewer.app`,
-        name,
-      },
-    });
+    const email = `${name.toLowerCase().replace(" ", ".")}@reviewer.app`;
+    let u = await prisma.user.findUnique({ where: { email } });
+    if (!u) {
+      u = await prisma.user.create({ data: { email, name } });
+    }
     users.push(u);
   }
   return users;
@@ -223,17 +261,20 @@ async function generateReviews(users: Array<{ id: string }>) {
       for (let i = 0; i < reviews.length; i++) {
         const review = reviews[i] as { rating?: number; comment?: string };
         const userId = users[i % users.length].id;
-        await prisma.collegeReview.upsert({
-          where: { collegeId_userId: { collegeId: college.id, userId } },
-          update: { rating: review.rating || 4, comment: review.comment || "Great college!" },
-          create: {
-            collegeId: college.id,
-            userId,
-            rating: review.rating || 4,
-            comment: review.comment || "Great college!",
-          },
+        const existing = await prisma.collegeReview.findFirst({
+          where: { collegeId: college.id, userId },
         });
-        generated++;
+        if (!existing) {
+          await prisma.collegeReview.create({
+            data: {
+              collegeId: college.id,
+              userId,
+              rating: review.rating || 4,
+              comment: review.comment || "Great college!",
+            },
+          });
+          generated++;
+        }
       }
       console.log(`  ✓ Added reviews to: ${college.name}`);
     } catch (err) {

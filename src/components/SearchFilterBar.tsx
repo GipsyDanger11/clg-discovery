@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useEffect } from "react";
+
 
 interface SearchFilterBarProps {
   query: string;
@@ -23,30 +23,14 @@ export function SearchFilterBar({
   sortBy,
   onSortByChange,
 }: SearchFilterBarProps) {
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
-  const debouncedChange = useCallback(
-    (value: string, setter: (v: string) => void) => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => setter(value), 300);
-    },
-    []
-  );
-
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
-
   return (
     <div className="flex flex-wrap gap-3 rounded-2xl border border-gray-150 bg-white p-5 shadow-sm">
       <div className="flex-1 min-w-[200px]">
         <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide">Search</label>
         <input
           type="text"
-          defaultValue={query}
-          onChange={(e) => debouncedChange(e.target.value, onQueryChange)}
+          value={query}
+          onChange={(e) => onQueryChange(e.target.value)}
           placeholder="College name, location, courses..."
           className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all"
         />
@@ -55,8 +39,8 @@ export function SearchFilterBar({
         <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide">Location</label>
         <input
           type="text"
-          defaultValue={location}
-          onChange={(e) => debouncedChange(e.target.value, onLocationChange)}
+          value={location}
+          onChange={(e) => onLocationChange(e.target.value)}
           placeholder="City, state..."
           className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all"
         />

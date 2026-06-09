@@ -96,16 +96,19 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
             exit={{ x: -400, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
           >
-            <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-500">
+            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3.5 bg-gradient-to-r from-primary-50/50 to-white">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-purple-600 shadow-sm">
                   <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" />
                   </svg>
                 </div>
-                <span className="font-semibold text-gray-800">AI College Assistant</span>
+                <div>
+                  <span className="font-semibold text-gray-800">AI Assistant</span>
+                  <p className="text-xs text-gray-400">College discovery help</p>
+                </div>
               </div>
-              <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+              <button onClick={onClose} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                 </svg>
@@ -113,22 +116,25 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
             </div>
 
             <div className="flex flex-1 overflow-hidden">
-              <div className="w-16 shrink-0 border-r border-gray-100 overflow-y-auto py-2 flex flex-col items-center gap-1">
+              <div className="w-14 shrink-0 border-r border-gray-100 overflow-y-auto py-3 flex flex-col items-center gap-1.5 bg-gray-50/30">
                 <button
                   onClick={() => { setMessages([]); setCurrentConvId(undefined); }}
-                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-primary-600 shadow-sm border border-primary-100 hover:bg-primary-50 hover:border-primary-200 transition-all"
                   title="New Chat"
                 >
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                   </svg>
                 </button>
+                <div className="w-6 border-t border-gray-200 my-1" />
                 {conversations.map((c) => (
                   <button
                     key={c.id}
                     onClick={() => fetchConversation(c.id)}
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl text-xs font-medium transition-colors ${
-                      currentConvId === c.id ? "bg-primary-100 text-primary-700" : "text-gray-400 hover:bg-gray-50"
+                    className={`flex h-9 w-9 items-center justify-center rounded-xl text-xs font-semibold transition-all ${
+                      currentConvId === c.id
+                        ? "bg-primary-100 text-primary-700 shadow-sm"
+                        : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                     }`}
                     title={c.title}
                   >
@@ -140,18 +146,26 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
               <div className="flex flex-1 flex-col overflow-hidden">
                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
                   {!session?.user ? (
-                    <div className="flex flex-col items-center justify-center h-full text-center">
-                      <p className="text-gray-500 mb-3">Sign in to use the AI Chat Assistant</p>
-                      <Link href="/auth/signin" className="rounded-lg bg-primary-500 px-4 py-2 text-sm text-white hover:bg-primary-600 transition-colors">
+                    <div className="flex flex-col items-center justify-center h-full text-center px-6">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-50 mb-4">
+                        <svg className="h-7 w-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                        </svg>
+                      </div>
+                      <p className="text-sm font-medium text-gray-500 mb-4">Sign in to use the AI Chat Assistant</p>
+                      <Link href="/auth/signin" className="rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 hover:shadow-md transition-all">
                         Sign In
                       </Link>
                     </div>
                   ) : messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                      <svg className="h-12 w-12 mb-3 text-primary-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" />
-                      </svg>
-                      <p className="text-sm">Ask me anything about colleges!</p>
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 mb-4">
+                        <svg className="h-7 w-7 text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" />
+                        </svg>
+                      </div>
+                      <p className="text-sm font-medium text-gray-500">Ask me anything about colleges!</p>
+                      <p className="text-xs text-gray-400 mt-1">Admissions, rankings, fees, and more</p>
                     </div>
                   ) : (
                     messages.map((msg) => (
@@ -180,23 +194,25 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
                   <div ref={messagesEndRef} />
                 </div>
 
-                <div className="border-t border-gray-100 p-3">
+                <div className="border-t border-gray-100 p-3 bg-white">
                   <div className="flex gap-2">
                     <input
                       type="text"
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
-                      placeholder="Type your message..."
+                      placeholder="Ask about colleges..."
                       disabled={loading}
-                      className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 disabled:opacity-50 transition-all"
+                      className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 focus:bg-white disabled:opacity-50 transition-all"
                     />
                     <button
                       onClick={sendMessage}
                       disabled={loading || !input.trim()}
-                      className="rounded-xl bg-primary-500 px-4 py-2.5 text-sm text-white font-medium hover:bg-primary-600 disabled:opacity-50 transition-colors shadow-sm"
+                      className="rounded-xl bg-primary-600 px-4 py-2.5 text-sm text-white font-semibold hover:bg-primary-700 disabled:opacity-50 transition-all shadow-sm"
                     >
-                      Send
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+                      </svg>
                     </button>
                   </div>
                 </div>
