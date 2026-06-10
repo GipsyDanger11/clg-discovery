@@ -467,12 +467,154 @@ const colleges = [
 
 async function main() {
   console.log("Seeding database...");
+  let count = 0;
 
   for (const college of colleges) {
-    await prisma.college.create({ data: college });
+    const existing = await prisma.college.findFirst({ where: { name: college.name } });
+    if (!existing) {
+      await prisma.college.create({ data: college });
+      count++;
+    }
   }
 
-  console.log(`Seeded ${colleges.length} colleges`);
+  console.log(`Added ${count} new colleges (skipped ${colleges.length - count} existing)`);
+
+  // ── Q&A seed data ──
+  const qaUsers = [
+    { name: "Ananya Gupta", email: "qa_user_1@example.com" },
+    { name: "Rohit Verma", email: "qa_user_2@example.com" },
+    { name: "Neha Joshi", email: "qa_user_3@example.com" },
+    { name: "Arjun Nair", email: "qa_user_4@example.com" },
+  ];
+
+  const qaUserIds: string[] = [];
+
+  for (const user of qaUsers) {
+    const existing = await prisma.user.findFirst({ where: { email: user.email } });
+    if (existing) {
+      qaUserIds.push(existing.id);
+    } else {
+      const created = await prisma.user.create({
+        data: { name: user.name, email: user.email },
+      });
+      qaUserIds.push(created.id);
+    }
+  }
+
+  const allColleges = await prisma.college.findMany({ select: { id: true, name: true } });
+
+  const questionsData = [
+    {
+      title: "Which branch should I choose at IIT Bombay?",
+      body: "I have a rank under 500 in JEE Advanced and I'm confused between CSE and Electrical Engineering. I love coding but also find circuits fascinating. Can seniors share their experiences about the two branches at IIT Bombay?",
+      collegeMatch: "Indian Institute of Technology Bombay",
+      userIdIdx: 0,
+      answers: [
+        { body: "CSE at IIT Bombay is incredible — top faculty, great peers, and placements are amazing. But Electrical is also very strong with tons of research opportunities. I'd suggest going with what you enjoy more since both have excellent outcomes.", userIdIdx: 1 },
+        { body: "Go for CSE if you're sure about software. Electrical gives you flexibility to switch to core or software later. The first year courses are common so you'll have time to explore before making a decision.", userIdIdx: 2 },
+      ],
+    },
+    {
+      title: "How are placements at NIT Trichy for Mechanical?",
+      body: "I'm considering joining NIT Trichy for Mechanical Engineering. I've heard CS placements are excellent but I'm not sure about core branches. Can anyone share the placement stats for Mechanical in recent years?",
+      collegeMatch: "National Institute of Technology Trichy",
+      userIdIdx: 1,
+      answers: [
+        { body: "Mechanical placements at NIT Trichy are quite good. Average package is around 12-14 LPA. Core companies like L&T, Tata Motors, Cummins, and Bosch visit regularly. Many students also get IT placements. About 85% of the batch gets placed.", userIdIdx: 3 },
+        { body: "Adding to that — some mechanical students also crack PSU jobs through GATE. The department has good industry connections and the training & placement cell works hard for core branches too.", userIdIdx: 0 },
+      ],
+    },
+    {
+      title: "BITS Pilani vs DTU for Computer Science?",
+      body: "I have admission offers from both BITS Pilani (CS) and DTU Delhi (CS). BITS has higher fees but great reputation, while DTU is in Delhi with lower fees. Which one should I choose considering placements, campus life, and overall ROI?",
+      collegeMatch: null,
+      userIdIdx: 2,
+      answers: [
+        { body: "BITS Pilani hands down. The alumni network, campus life, and academic flexibility are unmatched. The practice school program gives real industry exposure. Fees are high but ROI is excellent with average packages around 25 LPA for CS.", userIdIdx: 1 },
+        { body: "DTU is a great option too — especially if cost is a concern. Placements are very good (avg 20+ LPA for CS), location in Delhi means more internship opportunities, and the fees are much lower. Both are excellent choices, can't go wrong either way.", userIdIdx: 3 },
+      ],
+    },
+    {
+      title: "What is the coding culture like at VIT Vellore?",
+      body: "I'm joining VIT this year for CSE. I'm passionate about competitive programming and want to know about the coding clubs, hackathons, and overall coding culture at VIT. How does it compare to other colleges?",
+      collegeMatch: "Vellore Institute of Technology",
+      userIdIdx: 3,
+      answers: [
+        { body: "VIT has a very active coding culture. There are multiple coding clubs like CodeChef VIT, IEEE CS, and ACM chapters. The annual hackathon Gravitas attracts participants from across the country. Many students are active on Codeforces and CodeChef with good ratings.", userIdIdx: 0 },
+      ],
+    },
+    {
+      title: "How is campus life at COEP Pune?",
+      body: "I'm considering joining College of Engineering Pune for my B.Tech. I've heard it's one of the oldest engineering colleges. How is the campus life, hostels, and overall student experience? Any insights would be helpful!",
+      collegeMatch: "College of Engineering Pune",
+      userIdIdx: 1,
+      answers: [
+        { body: "COEP has an amazing campus life! The college is located in the heart of Pune. The annual fest is fantastic, and there are numerous technical and cultural clubs. Hostels are decent and the surrounding area has great food options. The peer group is competitive and helpful.", userIdIdx: 2 },
+        { body: "The heritage buildings give the campus a unique charm. Labs and workshops are well-equipped. The placement cell does a good job. Pune's weather is a bonus! Overall, a great college experience awaits you.", userIdIdx: 3 },
+      ],
+    },
+    {
+      title: "What rank is needed for CSE at IIT Delhi?",
+      body: "I'm preparing for JEE Advanced 2026. What approximate rank do I need to get Computer Science at IIT Delhi? Also, how does the CSE program at IIT Delhi compare with IIT Bombay's CSE?",
+      collegeMatch: "Indian Institute of Technology Delhi",
+      userIdIdx: 0,
+      answers: [
+        { body: "For IIT Delhi CSE (4-year B.Tech), you typically need under 100 rank in JEE Advanced. It's one of the most competitive branches in the country. Both IIT Delhi and IIT Bombay CSE are neck-and-neck — Delhi has an edge in AI/ML research while Bombay has a slight edge in placements.", userIdIdx: 1 },
+      ],
+    },
+    {
+      title: "Is ICT Mumbai good for Chemical Engineering?",
+      body: "I'm interested in Chemical Engineering and ICT Mumbai seems like the top choice. How are the faculty, research opportunities, and placements for chemical engineering? Is it better than IITs for this specific branch?",
+      collegeMatch: "Institute of Chemical Technology Mumbai",
+      userIdIdx: 2,
+      answers: [
+        { body: "ICT Mumbai is arguably the best institute in India for Chemical Engineering and related fields. In terms of core chemical engineering, it's on par with or even better than IITs. The industry connections are outstanding — companies like Reliance, P&G, Unilever, and Dr. Reddy's recruit heavily. Research output is excellent too.", userIdIdx: 0 },
+        { body: "I agree — ICT is a specialist institute and its reputation in chemical technology is unmatched. The alumni network in the chemical and pharmaceutical industries is extremely strong. Placements for chemical branches average around 15-18 LPA.", userIdIdx: 3 },
+      ],
+    },
+    {
+      title: "How to prepare for campus placements in 2nd year?",
+      body: "I'm a 2nd year CSE student at a private engineering college. I want to start preparing for placements early. What skills should I focus on? Should I learn DSA, web development, or something else? Any roadmap would be helpful.",
+      collegeMatch: null,
+      userIdIdx: 3,
+      answers: [
+        { body: "Start with DSA — it's the foundation for most tech interviews. Use resources like Striver's SDE sheet or NeetCode. Parallelly, pick one domain (web dev, app dev, or data science) and build 2-3 solid projects. Also focus on CS fundamentals: OS, DBMS, Computer Networks. Start LeetCode easy, then medium.", userIdIdx: 1 },
+        { body: "Don't forget about communication skills and resume building. Many good companies have HR rounds that filter based on soft skills. Also participate in hackathons and contribute to open source — it adds weight to your resume. Start applying for internships from 3rd year onwards.", userIdIdx: 2 },
+      ],
+    },
+  ];
+
+  let qaCount = 0;
+  for (const qData of questionsData) {
+    const existing = await prisma.question.findFirst({ where: { title: qData.title } });
+    if (existing) continue;
+
+    const college = qData.collegeMatch
+      ? allColleges.find((c) => c.name === qData.collegeMatch)
+      : null;
+
+    const question = await prisma.question.create({
+      data: {
+        userId: qaUserIds[qData.userIdIdx],
+        collegeId: college?.id ?? null,
+        title: qData.title,
+        body: qData.body,
+      },
+    });
+
+    for (const aData of qData.answers) {
+      await prisma.answer.create({
+        data: {
+          questionId: question.id,
+          userId: qaUserIds[aData.userIdIdx],
+          body: aData.body,
+        },
+      });
+    }
+    qaCount++;
+  }
+
+  console.log(`Added ${qaCount} questions with answers (skipped ${questionsData.length - qaCount} existing)`);
 }
 
 main()

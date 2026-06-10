@@ -74,7 +74,7 @@ async function callPythonService(message: string, history: { role: string; conte
 
 export async function POST(request: NextRequest) {
   try {
-    const userId = await requireUserId();
+    const userId = await requireUserId(request);
     const { message, conversationId } = await request.json();
 
     if (!message || typeof message !== "string") {
@@ -146,9 +146,9 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const userId = await requireUserId();
+    const userId = await requireUserId(request);
 
     const conversations = await prisma.chatConversation.findMany({
       where: { userId },

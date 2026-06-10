@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = await requireUserId();
+    const userId = await requireUserId(_request);
     const { id } = await params;
 
     const conversation = await prisma.chatConversation.findFirst({
@@ -35,7 +35,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = await requireUserId();
+    const userId = await requireUserId(_request);
     const { id } = await params;
 
     const conversation = await prisma.chatConversation.findFirst({
@@ -62,7 +62,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = await requireUserId();
+    const userId = await requireUserId(request);
     const { id } = await params;
     const { title } = await request.json();
 

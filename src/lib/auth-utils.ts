@@ -1,14 +1,18 @@
-import { auth } from "./auth";
+import { getToken } from "next-auth/jwt";
+import type { NextRequest } from "next/server";
 
-export async function getUserId(): Promise<string | null> {
-  const session = await auth();
-  return session?.user?.id ?? null;
+export async function getUserId(request?: NextRequest): Promise<string | null> {
+  if (request) {
+    const token = await getToken({ req: request as any, secret: process.env.NEXTAUTH_SECRET });
+    if (token?.id) return token.id as string;
+  }
+  return null;
 }
 
-export async function requireUserId(): Promise<string> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized");
+export async function requireUserId(request?: NextRequest): Promise<string> {
+  if (request) {
+    const token = await getToken({ req: request as any, secret: process.env.NEXTAUTH_SECRET });
+    if (token?.id) return token.id as string;
   }
-  return session.user.id;
+  throw new Error("Unauthorized");
 }

@@ -32,6 +32,28 @@ export function Navbar() {
           >
             AI Chat
           </Link>
+          {session?.user && (
+            <>
+              <Link
+                href="/saved"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-primary-50 hover:text-primary-600 sm:px-4"
+              >
+                Saved
+              </Link>
+              <Link
+                href="/questions"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-primary-50 hover:text-primary-600 sm:px-4"
+              >
+                Q&A
+              </Link>
+            </>
+          )}
+          <Link
+            href="/predictor"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-primary-50 hover:text-primary-600 sm:px-4"
+          >
+            Predictor
+          </Link>
           {session?.user ? (
             <div className="flex items-center gap-2 ml-2 sm:ml-4">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700">

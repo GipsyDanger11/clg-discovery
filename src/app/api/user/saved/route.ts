@@ -2,9 +2,9 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth-utils";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const userId = await requireUserId();
+    const userId = await requireUserId(request);
     const savedItems = await prisma.savedItem.findMany({
       where: { userId },
       include: { college: true },
@@ -21,7 +21,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const userId = await requireUserId();
+    const userId = await requireUserId(request);
     const { collegeId } = await request.json();
 
     if (!collegeId) {
@@ -38,10 +38,14 @@ export async function POST(request: NextRequest) {
 
     const savedItem = await prisma.savedItem.create({
       data: { userId, collegeId },
+    });
+
+    const created = await prisma.savedItem.findUnique({
+      where: { id: savedItem.id },
       include: { college: true },
     });
 
-    return Response.json(savedItem, { status: 201 });
+    return Response.json(created, { status: 201 });
   } catch (error) {
     if (error instanceof Error && error.message === "Unauthorized") {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -52,7 +56,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const userId = await requireUserId();
+    const userId = await requireUserId(request);
     const collegeId = request.nextUrl.searchParams.get("collegeId");
 
     if (!collegeId) {

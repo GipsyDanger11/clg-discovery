@@ -1,10 +1,11 @@
 import Link from "next/link";
 import type { College } from "@/lib/types";
+import { SaveButton } from "./SaveButton";
 
 export function CollegeCard({ college }: { college: College }) {
   return (
-    <Link href={`/college/${college.id}`}>
-      <div className="group relative rounded-xl border border-gray-150 bg-white shadow-sm transition-all hover:shadow-lg hover:border-primary-200 hover:-translate-y-1 cursor-pointer overflow-hidden">
+    <div className="group relative rounded-xl border border-gray-150 bg-white shadow-sm transition-all hover:shadow-lg hover:border-primary-200 hover:-translate-y-1 overflow-hidden">
+      <Link href={`/college/${college.id}`} className="block">
         <div className="relative h-44 bg-gradient-to-br from-primary-100 to-primary-50">
           {college.imageUrl ? (
             <img
@@ -49,7 +50,10 @@ export function CollegeCard({ college }: { college: College }) {
             )}
           </div>
         </div>
+      </Link>
+      <div className="absolute top-2 right-2 z-10">
+        <SaveButton collegeId={college.id} />
       </div>
-    </Link>
+    </div>
   );
 }

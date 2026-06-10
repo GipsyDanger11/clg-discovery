@@ -57,3 +57,35 @@ export interface ChatMessage {
   content: string;
   createdAt: string;
 }
+
+export interface Question {
+  id: string;
+  userId: string;
+  collegeId: string | null;
+  title: string;
+  body: string;
+  user: { id: string; name: string | null; image: string | null };
+  college?: { id: string; name: string } | null;
+  answers?: Answer[];
+  _count?: { answers: number };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Answer {
+  id: string;
+  questionId: string;
+  userId: string;
+  body: string;
+  user: { id: string; name: string | null; image: string | null };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SavedItem {
+  id: string;
+  userId: string;
+  collegeId: string;
+  college: College;
+  createdAt: string;
+}
